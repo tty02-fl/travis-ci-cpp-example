@@ -1,42 +1,29 @@
-#travis configuration for coverage testing
 language: c
-
-#sudo: false # only for faster builds
-
 install:
 - cd ${TRAVIS_BUILD_DIR}
-# install latest LCOV (1.9 was failing for me) [1]
-
 - wget http://ftp.de.debian.org/debian/pool/main/l/lcov/lcov_1.11.orig.tar.gz
 - tar xf lcov_1.11.orig.tar.gz
 - sudo make -C lcov-1.11/ install
-
-# install lcov to coveralls conversion + upload tool
 - gem install coveralls-lcov
-
-
-before_script: 
+before_script:
 - cd ${TRAVIS_BUILD_DIR}
 - lcov --directory . --zerocounters
-
-# Compiler selection
 compiler:
-  - clang
-  - gcc
-
-
-# Build steps
-script: 
-  - cd ${TRAVIS_BUILD_DIR}
-  - make && ./test-library.out
-
-
+- clang
+- gcc
+script:
+- cd ${TRAVIS_BUILD_DIR}
+- make && ./test-library.out
 after_success:
 - cd ${TRAVIS_BUILD_DIR}
-- lcov --directory . --capture --output-file coverage.info # capture coverage info
-- lcov --remove coverage.info 'tests/*' '/usr/*' 'test-library*' --output-file coverage.info # filter out system and test code
-- lcov --list coverage.info # debug before upload
-#- coveralls-lcov --repo-token ${COVERALLS_TOKEN} coverage.info # uploads to coveralls.. for a private repo using a token
-- coveralls-lcov  coverage.info #for open source 
-
-
+- lcov --directory . --capture --output-file coverage.info
+- lcov --remove coverage.info 'tests/*' '/usr/*' 'test-library*' --output-file coverage.info
+- lcov --list coverage.info
+- coveralls-lcov  coverage.info
+deploy:
+  provider: releases
+  api_key:
+    secure: dxalo/JmfGIZP6iRUqGol94KGxj2TWxBhY97aWHG9d/mvCsOduOGMFbGH2OA8tYl5XUXE1V9Adwx9V+EYhsDDI+on9G6edQL+0IxUmEd5xLZW1rO9O4TsfsGnzFQxwvECfbofYdMGsD+E0+CS2rt6klM/MtiLpRJAcGCR7y/FeBCwknFH8lRMjRnENMsbgSDlEzPVUMZd7R94Qbpwi/GG7rgG1YLVWFAA6vWHxeZl3UxQ6G32baOvJQ3KXRBU1+azm4rMvQJULh0eAUm2HjgnQQeCtuJwyn+2wSbUIYnAwuuVW7dwkPUUrY9JiqSOeBHgbkDFzol0Aj86YCHQHUNiSm7WMHl2elohnycj/fZBC6oG2Ca+ZyiF4d5if/BzmLe9KEi/aHnxVZBCKii8h3HOsze8y/eIPT2KHvCjK7g0Z9io+NHDU0+GrZMKaucWC7Pqt0Hpe+3ii19V6By03VAaiVLuIuKgrgEzMZyJ0fUd2ligizD1vC4o7u+1+jqZz2WqY1QaqQOMvbEtY57jq9WCOezLlTy2gV0eG5mixuVcLZsMY4rG0KsdTaeirWT05N2Hxsp/Agwd9o8w2S57qdvmMvCSgunNz34qddWsNM0A7zAVV3pkXPkPB+LAGbPCm8EQo+LZbnhkRHYU4HOisj8TeoI/9E8EOH4syMyfgxVE0Y=
+  file: test-library.out
+  on:
+    repo: tty02-fl/travis-ci-cpp-example
